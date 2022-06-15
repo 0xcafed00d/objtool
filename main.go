@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 func exitOnError(e error, msg string) {
@@ -80,7 +81,7 @@ func loadFile(r io.Reader, lineFunc func(string) error) error {
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
-		fmt.Println(line)
+		//fmt.Println(line)
 		err := lineFunc(line)
 		if err != nil {
 			return err
@@ -94,6 +95,38 @@ func loadFile(r io.Reader, lineFunc func(string) error) error {
 	return nil
 }
 
+func processLineVN(line string, objFile *ObjFile) error {
+	return nil
+}
+
+func processLineVT(line string, objFile *ObjFile) error {
+	return nil
+}
+
+func processLineV(line string, objFile *ObjFile) error {
+	return nil
+}
+
+func processLineF(line string, objFile *ObjFile) error {
+	return nil
+}
+
+func processLine(line string, objFile *ObjFile) error {
+	if len(line) > 0 {
+		if strings.HasPrefix(line, "vn") {
+			return processLineVN(line, objFile)
+		} else if strings.HasPrefix(line, "vt") {
+			return processLineVT(line, objFile)
+		} else if strings.HasPrefix(line, "v") {
+			return processLineV(line, objFile)
+		} else if strings.HasPrefix(line, "f") {
+			return processLineF(line, objFile)
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	flag.Parse()
 
@@ -102,4 +135,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	input := flag.Args()[0]
+	//outfile := os.Stdout
+
+	infile, err := os.Open(input)
+	exitOnError(err, "Cant Open Inputfile")
+	defer infile.Close()
+
+	objFile := ObjFile{}
+
+	err = loadFile(infile, func(line string) error {
+		return processLine(line, &objFile)
+	})
+
+	exitOnError(err, "Error Reading Inputfile")
 }
