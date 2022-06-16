@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -61,8 +62,10 @@ type TextureCoord struct {
 
 type FaceVertex struct {
 	v_idx int
-	t_idn int
+	t_idx int
+	has_t bool
 	n_idx int
+	has_n bool
 }
 
 type Face struct {
@@ -95,19 +98,93 @@ func loadFile(r io.Reader, lineFunc func(string) error) error {
 	return nil
 }
 
+// turn a space separated list of numbers to a slice of doubles
+func string2numbers(numberList string) ([]float64, error) {
+	numberList = strings.Trim(numberList, " \t")
+	numberStrs := strings.Split(numberList, " ")
+
+	numbers := []float64{}
+	for _, n := range numberStrs {
+		num, err := strconv.ParseFloat(n, 64)
+		if err != nil {
+			return nil, err
+		}
+		numbers = append(numbers, num)
+	}
+	return numbers, nil
+}
+
 func processLineVN(line string, objFile *ObjFile) error {
+	n, err := string2numbers(line[2:])
+	if err != nil {
+		return err
+	}
+	objFile.vertexNormals = append(objFile.vertexNormals, VertexNormal{n[0], n[1], n[2]})
 	return nil
 }
 
 func processLineVT(line string, objFile *ObjFile) error {
+	n, err := string2numbers(line[2:])
+	if err != nil {
+		return err
+	}
+	objFile.texCoords = append(objFile.texCoords, TextureCoord{n[0], n[1], 0})
 	return nil
 }
 
 func processLineV(line string, objFile *ObjFile) error {
+	n, err := string2numbers(line[1:])
+	if err != nil {
+		return err
+	}
+	objFile.vertices = append(objFile.vertices, Vertex{n[0], n[1], n[2], 1.0})
 	return nil
 }
 
 func processLineF(line string, objFile *ObjFile) error {
+	line = strings.Trim(line[1:], " \t")
+	indexStrs := strings.Split(line, " ")
+
+	indices := []FaceVertex{}
+	for _, i := range indexStrs {
+		if strings.Contains(i, "/") {
+			var err error
+
+			idxs := strings.Split(i, "/")
+			fv := FaceVertex{}
+
+			fv.v_idx, err = strconv.Atoi(idxs[0])
+			if err != nil {
+				return err
+			}
+
+			if idxs[1] != "" {
+				fv.t_idx, err = strconv.Atoi(idxs[1])
+				fv.has_t = true
+				if err != nil {
+					return err
+				}
+			}
+
+			if len(idxs) > 2 {
+				fv.n_idx, err = strconv.Atoi(idxs[2])
+				fv.has_n = true
+				if err != nil {
+					return err
+				}
+			}
+
+			indices = append(indices, fv)
+		} else {
+			idx, err := strconv.Atoi(i)
+			if err != nil {
+				return err
+			}
+			indices = append(indices, FaceVertex{v_idx: idx})
+		}
+	}
+	objFile.faces = append(objFile.faces, Face{indices})
+
 	return nil
 }
 
@@ -123,7 +200,6 @@ func processLine(line string, objFile *ObjFile) error {
 			return processLineF(line, objFile)
 		}
 	}
-
 	return nil
 }
 
