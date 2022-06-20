@@ -205,13 +205,17 @@ func processLine(line string, objFile *ObjFile) error {
 }
 
 type ObjFileInfo struct {
-	BBoxMin  Vertex
-	BBoxMax  Vertex
-	BBoxSize Vertex
-	Origin   Vertex
+	BBoxMin     Vertex
+	BBoxMax     Vertex
+	BBoxSize    Vertex
+	Origin      Vertex
+	FaceCount   int
+	FaceTypes   map[int]int
+	VertexCount int
 }
 
 func getInfo(objFile *ObjFile) ObjFileInfo {
+
 	BBmin := Vertex{math.Inf(1), math.Inf(1), math.Inf(1), 0}
 	BBmax := Vertex{math.Inf(-1), math.Inf(-1), math.Inf(-1), 0}
 
@@ -224,7 +228,13 @@ func getInfo(objFile *ObjFile) ObjFileInfo {
 		BBmax.z = math.Max(v.z, BBmax.z)
 	}
 
-	info := ObjFileInfo{}
+	info := ObjFileInfo{FaceTypes: map[int]int{}}
+	info.VertexCount = len(objFile.vertices)
+	info.FaceCount = len(objFile.faces)
+	for _, f := range objFile.faces {
+		info.FaceTypes[len(f.faceVertex)] += 1
+	}
+
 	info.BBoxMax = BBmax
 	info.BBoxMin = BBmin
 	info.BBoxSize = Vertex{BBmax.x - BBmin.x, BBmax.y - BBmin.y, BBmax.z - BBmin.z, 0.0}
@@ -235,11 +245,18 @@ func getInfo(objFile *ObjFile) ObjFileInfo {
 
 func displayInfo(nfo *ObjFileInfo) {
 
-	fmt.Printf("  Size: {x:%0.6f, y:%0.6f, z:%0.6f} \n", nfo.BBoxSize.x, nfo.BBoxSize.y, nfo.BBoxSize.z)
-	fmt.Printf("Origin: {x:%0.6f, y:%0.6f, z:%0.6f} \n", nfo.Origin.x, nfo.Origin.y, nfo.Origin.z)
-	fmt.Printf("Extent: x: %0.6f -> %0.6f \n", nfo.BBoxMin.x, nfo.BBoxMax.x)
-	fmt.Printf("        y: %0.6f -> %0.6f \n", nfo.BBoxMin.y, nfo.BBoxMax.y)
-	fmt.Printf("        z: %0.6f -> %0.6f \n", nfo.BBoxMin.z, nfo.BBoxMax.z)
+	fmt.Printf("Vertex Count: %d \n", nfo.VertexCount)
+	fmt.Printf("  Face Count: %d \n", nfo.FaceCount)
+	fmt.Printf("        Size: {x:%0.6f, y:%0.6f, z:%0.6f} \n", nfo.BBoxSize.x, nfo.BBoxSize.y, nfo.BBoxSize.z)
+	fmt.Printf("      Origin: {x:%0.6f, y:%0.6f, z:%0.6f} \n", nfo.Origin.x, nfo.Origin.y, nfo.Origin.z)
+	fmt.Printf("      Extent: x: %0.6f -> %0.6f \n", nfo.BBoxMin.x, nfo.BBoxMax.x)
+	fmt.Printf("           y: %0.6f -> %0.6f \n", nfo.BBoxMin.y, nfo.BBoxMax.y)
+	fmt.Printf("           z: %0.6f -> %0.6f \n", nfo.BBoxMin.z, nfo.BBoxMax.z)
+
+	fmt.Printf("   Face Info--->\n")
+	for vertices, count := range nfo.FaceTypes {
+		fmt.Printf(" Vertex Count: %d Count: %d\n", vertices, count)
+	}
 }
 
 func main() {
