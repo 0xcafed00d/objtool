@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -203,6 +204,44 @@ func processLine(line string, objFile *ObjFile) error {
 	return nil
 }
 
+type ObjFileInfo struct {
+	BBoxMin  Vertex
+	BBoxMax  Vertex
+	BBoxSize Vertex
+	Origin   Vertex
+}
+
+func getInfo(objFile *ObjFile) ObjFileInfo {
+	BBmin := Vertex{math.Inf(1), math.Inf(1), math.Inf(1), 0}
+	BBmax := Vertex{math.Inf(-1), math.Inf(-1), math.Inf(-1), 0}
+
+	for _, v := range objFile.vertices {
+		BBmin.x = math.Min(v.x, BBmin.x)
+		BBmin.y = math.Min(v.y, BBmin.y)
+		BBmin.z = math.Min(v.z, BBmin.z)
+		BBmax.x = math.Max(v.x, BBmax.x)
+		BBmax.y = math.Max(v.y, BBmax.y)
+		BBmax.z = math.Max(v.z, BBmax.z)
+	}
+
+	info := ObjFileInfo{}
+	info.BBoxMax = BBmax
+	info.BBoxMin = BBmin
+	info.BBoxSize = Vertex{BBmax.x - BBmin.x, BBmax.y - BBmin.y, BBmax.z - BBmin.z, 0.0}
+	info.Origin = Vertex{(BBmax.x + BBmin.x) / 2.0, (BBmax.y + BBmin.y) / 2.0, (BBmax.z + BBmin.z) / 2.0, 0.0}
+
+	return info
+}
+
+func displayInfo(nfo *ObjFileInfo) {
+
+	fmt.Printf("  Size: {x:%0.6f, y:%0.6f, z:%0.6f} \n", nfo.BBoxSize.x, nfo.BBoxSize.y, nfo.BBoxSize.z)
+	fmt.Printf("Origin: {x:%0.6f, y:%0.6f, z:%0.6f} \n", nfo.Origin.x, nfo.Origin.y, nfo.Origin.z)
+	fmt.Printf("Extent: x: %0.6f -> %0.6f \n", nfo.BBoxMin.x, nfo.BBoxMax.x)
+	fmt.Printf("        y: %0.6f -> %0.6f \n", nfo.BBoxMin.y, nfo.BBoxMax.y)
+	fmt.Printf("        z: %0.6f -> %0.6f \n", nfo.BBoxMin.z, nfo.BBoxMax.z)
+}
+
 func main() {
 	flag.Parse()
 
@@ -223,6 +262,9 @@ func main() {
 	err = loadFile(infile, func(line string) error {
 		return processLine(line, &objFile)
 	})
+
+	info := getInfo(&objFile)
+	displayInfo(&info)
 
 	exitOnError(err, "Error Reading Inputfile")
 }
