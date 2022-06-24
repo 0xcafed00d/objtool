@@ -212,16 +212,18 @@ func getInfo(objFile *ObjFile) ObjFileInfo {
 
 func displayInfo(nfo *ObjFileInfo) {
 
-	fmt.Printf("Vertex Count: %d \n", nfo.VertexCount)
-	fmt.Printf("  Face Count: %d \n", nfo.FaceCount)
-	fmt.Printf("        Size: {x:%0.6f, y:%0.6f, z:%0.6f} \n", nfo.BBoxSize.x, nfo.BBoxSize.y, nfo.BBoxSize.z)
-	fmt.Printf("      Origin: {x:%0.6f, y:%0.6f, z:%0.6f} \n", nfo.Origin.x, nfo.Origin.y, nfo.Origin.z)
-	fmt.Printf("      Extent: x: %0.6f -> %0.6f \n", nfo.BBoxMin.x, nfo.BBoxMax.x)
-	fmt.Printf("           y: %0.6f -> %0.6f \n", nfo.BBoxMin.y, nfo.BBoxMax.y)
-	fmt.Printf("           z: %0.6f -> %0.6f \n", nfo.BBoxMin.z, nfo.BBoxMax.z)
+	fmt.Printf("#Vertex Count: %d \n", nfo.VertexCount)
+	fmt.Printf("#  Face Count: %d \n", nfo.FaceCount)
+	fmt.Printf("#        Size: {x:%0.6f, y:%0.6f, z:%0.6f} \n", nfo.BBoxSize.x, nfo.BBoxSize.y, nfo.BBoxSize.z)
+	fmt.Printf("#      Origin: {x:%0.6f, y:%0.6f, z:%0.6f} \n", nfo.Origin.x, nfo.Origin.y, nfo.Origin.z)
+	fmt.Printf("#      Extent: x: %0.6f -> %0.6f \n", nfo.BBoxMin.x, nfo.BBoxMax.x)
+	fmt.Printf("#           y: %0.6f -> %0.6f \n", nfo.BBoxMin.y, nfo.BBoxMax.y)
+	fmt.Printf("#           z: %0.6f -> %0.6f \n", nfo.BBoxMin.z, nfo.BBoxMax.z)
 
-	fmt.Printf("   Face Info--->\n")
+	fmt.Printf("#   Face Info--->\n")
 	for vertices, count := range nfo.FaceTypes {
-		fmt.Printf(" Vertex Count: %d Count: %d\n", vertices, count)
+		fmt.Printf("# Vertex Count: %d Count: %d\n", vertices, count)
 	}
+	fmt.Printf("\n")
+
 }

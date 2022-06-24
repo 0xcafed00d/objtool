@@ -65,10 +65,10 @@ func init() {
 	flag.BoolVar(&config.centerOriginZ, "cz", false, "Move the object along the Z axis so its center is Z=0")
 	flag.BoolVar(&config.y0align, "y0", false, "align the base of object to Y=0 (the ground)")
 	flag.BoolVar(&config.triangle, "t", false, "convert all faces to triangles")
-	flag.Float64Var(&config.scale, "s", 100.0, "scale the object to s%")
-	flag.Float64Var(&config.resizeX, "rx", -1.0, "resize object along x to specified size, all other axis are scale in proportion")
-	flag.Float64Var(&config.resizeY, "ry", -1.0, "resize object along y to specified size, all other axis are scale in proportion")
-	flag.Float64Var(&config.resizeZ, "rz", -1.0, "resize object along z to specified size, all other axis are scale in proportion")
+	flag.Float64Var(&config.scale, "s", 1, "scale the object to s%")
+	flag.Float64Var(&config.resizeX, "rx", 0, "resize object along x to specified size, all other axis are scale in proportion")
+	flag.Float64Var(&config.resizeY, "ry", 0, "resize object along y to specified size, all other axis are scale in proportion")
+	flag.Float64Var(&config.resizeZ, "rz", 0, "resize object along z to specified size, all other axis are scale in proportion")
 
 	flag.Usage = func() {
 		fmt.Fprintln(os.Stderr, "objtool: displays information and modifies a wavefront OBJ 3d model file")
@@ -104,6 +104,8 @@ func main() {
 
 	postinfo := getInfo(&objFile)
 	displayInfo(&postinfo)
+
+	saveFile(os.Stdout, &objFile)
 
 	exitOnError(err, "Error Reading Inputfile")
 }
